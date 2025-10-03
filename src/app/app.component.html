@@ -1,0 +1,18 @@
+<mat-toolbar class="main-toolbar">
+  <div class="toolbar-title-container"></div>
+
+  <span class="toolbar-spacer"></span>
+
+  <div class="toolbar-buttons">
+    <button mat-button (click)="navigateTo('/home')">Home</button>
+    <button mat-button (click)="navigateTo('/historico')">Histórico</button>
+    <button mat-button (click)="navigateTo('/configuracoes')">Configurações</button>
+    <button mat-icon-button (click)="toggleTheme()">
+      <mat-icon>brightness_4</mat-icon>
+    </button>
+  </div>
+</mat-toolbar>
+
+<main class="main-content">
+  <router-outlet />
+</main>

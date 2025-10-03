@@ -1,0 +1,33 @@
+<mat-card *ngIf="platformDetails">
+  <mat-card-header
+    class="platform-header"
+    [ngStyle]="{ 'background-color': themeService.isDarkTheme() ? platformDetails.darkColor : platformDetails.color }"
+  >
+    <mat-icon class="platform-icon">{{ platformDetails.icon }}</mat-icon>
+    <mat-card-title>{{ platformDetails.name }}</mat-card-title>
+  </mat-card-header>
+
+  <mat-divider></mat-divider>
+
+  <mat-card-content class="platform-content">
+    <div class="setting-row">
+      <span>Ativo</span>
+      <mat-checkbox [(ngModel)]="credential.active"></mat-checkbox>
+    </div>
+
+    <ng-container *ngIf="isTumblr() && tumblrCredential">
+      <mat-divider></mat-divider>
+      <div class="setting-row">
+        <span>Blog</span>
+        <mat-form-field appearance="outline" class="blog-select">
+          <mat-select [(ngModel)]="tumblrCredential.blogName">
+            <mat-option *ngFor="let blog of tumblrCredential.blogs" [value]="blog.name">
+              {{ blog.title }}
+            </mat-option>
+          </mat-select>
+        </mat-form-field>
+      </div>
+      <button mat-stroked-button color="primary" class="full-width-btn">Consultar Blogs</button>
+    </ng-container>
+  </mat-card-content>
+</mat-card>

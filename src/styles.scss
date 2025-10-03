@@ -1,0 +1,17 @@
+@use 'app/styles/theming' as theming;
+
+@import url('https://fonts.googleapis.com/css2?family=Exo+2:wght@700&display=swap');
+
+html,
+body {
+  height: 100%;
+}
+body {
+  margin: 0;
+  font-family: Roboto, 'Helvetica Neue', sans-serif;
+  background-color: var(--mat-sys-color-background);
+  color: var(--mat-sys-color-on-background);
+}
+
+html, body { height: 100%; }
+body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }

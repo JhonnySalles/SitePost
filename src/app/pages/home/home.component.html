@@ -1,0 +1,70 @@
+<div class="home-container">
+  <div class="scroll-content">
+    <mat-card class="pill-card">
+      <div fxLayout="row" fxLayoutAlign="space-around center" class="platform-icons">
+        <mat-icon svgIcon="facebook-logo"></mat-icon>
+        <mat-icon svgIcon="instagram-logo"></mat-icon>
+        <mat-icon svgIcon="twitter-logo"></mat-icon>
+        <mat-icon svgIcon="linkedin-logo"></mat-icon>
+      </div>
+    </mat-card>
+
+    <mat-form-field class="post-textarea" appearance="outline">
+      <mat-label>O que você está pensando?</mat-label>
+      <textarea matInput cdkTextareaAutosize cdkAutosizeMinRows="5"></textarea>
+    </mat-form-field>
+
+    <div class="divider-container">
+      <mat-divider></mat-divider>
+    </div>
+
+    <mat-form-field class="tags-field" appearance="outline">
+      <mat-label>Tags</mat-label>
+      <mat-chip-grid #chipGrid aria-label="Tag selection">
+        <mat-chip-row *ngFor="let tag of tags" (removed)="remove(tag)">
+          {{ tag }}
+          <button matChipRemove aria-label="'remover ' + tag">
+            <mat-icon>cancel</mat-icon>
+          </button>
+        </mat-chip-row>
+      </mat-chip-grid>
+      <input
+        placeholder="Nova tag..."
+        #tagInput
+        [formControl]="tagCtrl"
+        [matAutocomplete]="auto"
+        [matChipInputFor]="chipGrid"
+        [matChipInputSeparatorKeyCodes]="separatorKeysCodes"
+        (matChipInputTokenEnd)="add($event)"
+      />
+      <mat-autocomplete #auto="matAutocomplete" (optionSelected)="selected($event)">
+        <mat-option *ngFor="let tag of filteredTags$ | async" [value]="tag">
+          {{ tag }}
+        </mat-option>
+      </mat-autocomplete>
+    </mat-form-field>
+
+    <ngx-dropzone
+      class="image-dropzone"
+      (change)="onSelectFiles($event)"
+      accept="image/jpeg,image/png,image/gif"
+      [multiple]="true"
+    >
+      <ngx-dropzone-label>
+        <mat-icon>add_photo_alternate</mat-icon>
+        <div>Arraste suas imagens aqui ou clique para selecionar</div>
+      </ngx-dropzone-label>
+    </ngx-dropzone>
+
+    <div class="previews-container" *ngIf="uploadedFiles.length > 0">
+      <ngx-dropzone-image-preview
+        ngProjectAs="ngx-dropzone-preview"
+        *ngFor="let f of uploadedFiles"
+        [file]="f"
+        [removable]="true"
+        (removed)="onRemoveFile(f)"
+      >
+      </ngx-dropzone-image-preview>
+    </div>
+  </div>
+</div>

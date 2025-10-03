@@ -1,0 +1,30 @@
+.main-toolbar {
+  height: 50px;
+  padding: 0 16px;
+  display: flex;
+  align-items: center;
+  background-color: var(--mat-sys-color-surface-container);
+}
+
+.toolbar-title-container {
+  width: 200px;
+  height: 100%;
+  background-image: url('/assets/header-background.jpg');
+  background-size: cover;
+  background-position: center;
+}
+
+.toolbar-spacer {
+  flex: 1 1 auto;
+}
+
+.toolbar-buttons button {
+  margin-left: 8px;
+}
+
+.main-content {
+  padding-top: 50px;
+  height: calc(100vh - 50px);
+  box-sizing: border-box;
+  background-color: var(--mat-sys-color-surface-container);
+}

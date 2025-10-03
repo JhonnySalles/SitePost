@@ -1,0 +1,36 @@
+<div class="config-container">
+  <div class="config-content">
+    <mat-card>
+      <mat-card-header>
+        <mat-card-title>Autenticação</mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <button mat-raised-button color="primary">Login com Google</button>
+      </mat-card-content>
+    </mat-card>
+
+    <mat-divider></mat-divider>
+
+    <mat-card>
+      <mat-card-header>
+        <mat-card-title>Preferências</mat-card-title>
+      </mat-card-header>
+      <mat-card-content fxLayout="row" fxLayoutAlign="space-between center">
+        <span>Tema Escuro</span>
+        <mat-slide-toggle [checked]="themeService.isDarkTheme()" (change)="onThemeChange($event.checked)">
+        </mat-slide-toggle>
+      </mat-card-content>
+    </mat-card>
+
+    <mat-divider></mat-divider>
+
+    <mat-card>
+      <mat-card-header>
+        <mat-card-title>Contas Conectadas</mat-card-title>
+      </mat-card-header>
+      <mat-card-content class="accounts-list">
+        <app-platform-card *ngFor="let cred of credentials" [credential]="cred"> </app-platform-card>
+      </mat-card-content>
+    </mat-card>
+  </div>
+</div>

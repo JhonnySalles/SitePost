@@ -1,0 +1,34 @@
+.config-container {
+  height: 100%;
+  overflow-y: auto;
+  padding: 24px;
+  box-sizing: border-box;
+  background-color: var(--mat-sys-background);
+  color: var(--mat-sys-on-surface);
+}
+
+.config-content {
+  max-width: 600px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+mat-card {
+  padding: 16px;
+}
+
+mat-card-header {
+  padding-bottom: 16px;
+}
+
+.accounts-list {
+  min-height: 100px;
+}
+
+.accounts-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}

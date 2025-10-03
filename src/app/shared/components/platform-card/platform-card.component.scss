@@ -1,0 +1,39 @@
+mat-card {
+  padding: 0;
+}
+
+.platform-header {
+  padding: 12px 16px;
+  color: white;
+
+  &.light-text {
+    color: black;
+  }
+}
+
+.platform-icon {
+  margin-right: 16px;
+}
+
+.platform-content {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.setting-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.blog-select {
+  .mdc-text-field {
+    padding: 0 !important;
+  }
+}
+
+.full-width-btn {
+  width: 100%;
+}
