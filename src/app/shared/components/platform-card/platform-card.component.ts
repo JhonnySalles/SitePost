@@ -1,4 +1,4 @@
-import { Component, Input, OnInit, inject } from '@angular/core';
+import { Component, Input, OnInit, inject, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 
@@ -36,6 +36,7 @@ import { ThemeService } from '../../../services/theme.service';
   ],
   templateUrl: './platform-card.component.html',
   styleUrls: ['./platform-card.component.scss'],
+  schemas: [CUSTOM_ELEMENTS_SCHEMA],
 })
 export class PlatformCardComponent implements OnInit {
   @Input({ required: true }) credential!: AnyCredentials;

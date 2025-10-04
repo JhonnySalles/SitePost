@@ -8,7 +8,7 @@ import { FlexLayoutModule } from '@angular/flex-layout';
 import { ThemeService } from '../../services/theme.service';
 import { FormsModule } from '@angular/forms';
 
-import { AnyCredentials, X, TUMBLR } from '../../shared/models/social-platforms.model';
+import { AnyCredentials, X, TUMBLR, THREADS, BLUESKY } from '../../shared/models/social-platforms.model';
 import { PlatformCardComponent } from '../../shared/components/platform-card/platform-card.component';
 
 @Component({
@@ -33,6 +33,14 @@ export class ConfigComponent {
   credentials: AnyCredentials[] = [
     {
       platform: X,
+      active: true,
+    },
+    {
+      platform: THREADS,
+      active: true,
+    },
+    {
+      platform: BLUESKY,
       active: true,
     },
     {

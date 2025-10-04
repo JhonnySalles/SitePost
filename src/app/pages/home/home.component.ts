@@ -1,4 +1,4 @@
-import { Component, ElementRef, ViewChild, inject } from '@angular/core';
+import { Component, ElementRef, ViewChild, inject, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { COMMA, ENTER } from '@angular/cdk/keycodes';
 import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
@@ -15,6 +15,7 @@ import { MatDividerModule } from '@angular/material/divider';
 import { MatButtonModule } from '@angular/material/button';
 import { LiveAnnouncer } from '@angular/cdk/a11y';
 import { NgxDropzoneModule } from 'ngx-dropzone';
+import { SOCIAL_PLATFORMS, X, BLUESKY } from '../../shared/models/social-platforms.model';
 
 @Component({
   selector: 'app-home',
@@ -36,6 +37,7 @@ import { NgxDropzoneModule } from 'ngx-dropzone';
   ],
   templateUrl: './home.component.html',
   styleUrls: ['./home.component.scss'],
+  schemas: [CUSTOM_ELEMENTS_SCHEMA],
 })
 export class HomeComponent {
   separatorKeysCodes: number[] = [ENTER, COMMA];
@@ -48,6 +50,9 @@ export class HomeComponent {
   announcer = inject(LiveAnnouncer);
 
   uploadedFiles: File[] = [];
+
+  postTextCtrl = new FormControl('');
+  platforms = SOCIAL_PLATFORMS;
 
   onSelectFiles(event: { addedFiles: any }) {
     this.uploadedFiles.push(...event.addedFiles);
@@ -90,5 +95,23 @@ export class HomeComponent {
   private _filter(value: string): string[] {
     const filterValue = value.toLowerCase();
     return this.allTags.filter((tag) => tag.toLowerCase().includes(filterValue));
+  }
+
+  getRemainingCharacters(platform: (typeof SOCIAL_PLATFORMS)[number]): number {
+    const postText = this.postTextCtrl.value || '';
+    const limit = platform.limits || 0;
+    let tagsLength = 0;
+
+    if (this.tags.length > 0) {
+      switch (platform.name) {
+        case X:
+        case BLUESKY:
+          const tagsAsHashtags = this.tags.map((tag) => `#${tag.replace(/ /g, '')}`).join(' ');
+          tagsLength = tagsAsHashtags.length + (postText.length > 0 ? 1 : 0);
+          break;
+      }
+    }
+
+    return limit - postText.length - tagsLength;
   }
 }

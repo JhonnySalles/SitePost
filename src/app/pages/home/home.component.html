@@ -2,17 +2,28 @@
   <div class="scroll-content">
     <mat-card class="pill-card">
       <div fxLayout="row" fxLayoutAlign="space-around center" class="platform-icons">
-        <mat-icon svgIcon="facebook-logo"></mat-icon>
-        <mat-icon svgIcon="instagram-logo"></mat-icon>
-        <mat-icon svgIcon="twitter-logo"></mat-icon>
-        <mat-icon svgIcon="linkedin-logo"></mat-icon>
+        <ion-icon name="logo-twitter"></ion-icon>
+        <ion-icon name="logo-tumblr"></ion-icon>
+        <ion-icon name="at-sharp"></ion-icon>
+        <ion-icon name="chatbubbles-outline"></ion-icon>
       </div>
     </mat-card>
 
     <mat-form-field class="post-textarea" appearance="outline">
       <mat-label>O que você está pensando?</mat-label>
-      <textarea matInput cdkTextareaAutosize cdkAutosizeMinRows="5"></textarea>
+      <textarea matInput cdkTextareaAutosize cdkAutosizeMinRows="5" [formControl]="postTextCtrl"></textarea>
     </mat-form-field>
+
+    <div class="counters-container" fxLayout="row wrap" fxLayoutGap="8px">
+      <div
+        *ngFor="let platform of platforms"
+        class="counter-pill"
+        [ngClass]="{ error: getRemainingCharacters(platform) < 0 }"
+      >
+        <ion-icon [name]="platform.icon" class="counter-icon"></ion-icon>
+        <span>{{ getRemainingCharacters(platform) }}</span>
+      </div>
+    </div>
 
     <div class="divider-container">
       <mat-divider></mat-divider>
