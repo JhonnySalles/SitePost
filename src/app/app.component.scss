@@ -3,15 +3,21 @@
   padding: 0 16px;
   display: flex;
   align-items: center;
-  background-color: var(--mat-sys-color-surface-container);
+  background-color: var(--mat-sys-background);
+  position: relative;
+  overflow: hidden;
 }
 
 .toolbar-title-container {
-  width: 200px;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
   height: 100%;
-  background-image: url('/assets/header-background.jpg');
+  background-image: url('/src/assets/header-background.jpg');
   background-size: cover;
   background-position: center;
+  z-index: 0;
 }
 
 .toolbar-spacer {

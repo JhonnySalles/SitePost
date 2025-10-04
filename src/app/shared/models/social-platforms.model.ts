@@ -16,15 +16,15 @@ export const SOCIAL_PLATFORMS = [
     name: X,
     icon: 'logo-twitter',
     limits: 280,
-    color: '#000000',
-    darkColor: '#FFFFFF',
+    color: '#1DA1F2',
+    darkColor: '#1DA1F2',
   },
   {
     name: THREADS,
     icon: 'at-sharp',
     limits: 500,
     color: '#000000',
-    darkColor: '#FFFFFF',
+    darkColor: '#000000',
   },
   {
     name: BLUESKY,

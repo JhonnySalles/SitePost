@@ -3,7 +3,7 @@
     class="platform-header"
     [ngStyle]="{ 'background-color': themeService.isDarkTheme() ? platformDetails.darkColor : platformDetails.color }"
   >
-    <mat-icon class="platform-icon">{{ platformDetails.icon }}</mat-icon>
+    <ion-icon [name]="platformDetails.icon" class="platform-icon"></ion-icon>
     <mat-card-title>{{ platformDetails.name }}</mat-card-title>
   </mat-card-header>
 
