@@ -77,5 +77,27 @@
       >
       </ngx-dropzone-image-preview>
     </div>
+
+    <div
+      class="floating-action-panel"
+      [class.expanded]="isExpanded"
+      (mouseenter)="onPanelMouseEnter()"
+      (mouseleave)="onPanelMouseLeave()"
+    >
+      <button class="action-item cancel" mat-ripple (click)="onCancel()">
+        <ion-icon name="close-circle-outline"></ion-icon>
+        <span class="action-text">Cancelar</span>
+      </button>
+
+      <button class="action-item draft" mat-ripple (click)="onSaveAsDraft()">
+        <ion-icon name="document-text-outline"></ion-icon>
+        <span class="action-text">Rascunho</span>
+      </button>
+
+      <button class="action-item post" mat-ripple (click)="onPublish()">
+        <ion-icon name="send-outline"></ion-icon>
+        <span class="action-text">Postar</span>
+      </button>
+    </div>
   </div>
 </div>

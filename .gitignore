@@ -78,6 +78,8 @@ ehthumbs.db
 .env.development.local
 .env.test.local
 .env.production.local
+environment.ts
+environment.prod.ts
 
 # Arquivos de dependências específicas do Typescript
 *.tsbuildinfo

@@ -1,18 +1,23 @@
-<mat-toolbar class="main-toolbar">
-  <div class="toolbar-title-container"></div>
+<mat-toolbar class="main-toolbar" *ngIf="!isFullScreenRoute && authService.isLoggedIn()">
+  <div class="toolbar-background-image"></div>
 
-  <span class="toolbar-spacer"></span>
+  <div class="toolbar-content">
+    <span class="toolbar-spacer"></span>
 
-  <div class="toolbar-buttons">
-    <button mat-button (click)="navigateTo('/home')">Home</button>
-    <button mat-button (click)="navigateTo('/historico')">Histórico</button>
-    <button mat-button (click)="navigateTo('/configuracoes')">Configurações</button>
-    <button mat-icon-button (click)="toggleTheme()">
-      <mat-icon>brightness_4</mat-icon>
-    </button>
+    <div class="toolbar-buttons">
+      <button mat-button (click)="navigateTo('/home')">Home</button>
+      <button mat-button (click)="navigateTo('/historico')">Histórico</button>
+      <button mat-button (click)="navigateTo('/configuracoes')">Configurações</button>
+      <button mat-icon-button (click)="logout()" aria-label="Sair da conta">
+        <mat-icon>logout</mat-icon>
+      </button>
+      <button mat-icon-button class="theme-toggle-button" (click)="toggleTheme()">
+        <mat-icon>brightness_4</mat-icon>
+      </button>
+    </div>
   </div>
 </mat-toolbar>
 
-<main class="main-content">
-  <router-outlet />
+<main class="main-content" [class.full-screen]="isFullScreenRoute || !authService.isLoggedIn()">
+  <router-outlet></router-outlet>
 </main>

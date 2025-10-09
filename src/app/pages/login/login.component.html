@@ -1,7 +1,7 @@
 <div class="login-container" fxLayout="column" fxLayoutAlign="center center">
-  <div class="login-card-wrapper">
-    <mat-card class="login-card">
-      <div class="card-inner-content">
+  <form class="login-form" [formGroup]="loginForm" (ngSubmit)="onLogin()">
+    <div class="login-card-wrapper">
+      <mat-card class="login-card">
         <mat-card-header>
           <div class="title-container" fxLayout="row" fxLayoutAlign="center center" fxLayoutGap="10px">
             <h1 class="login-title">SitePost</h1>
@@ -12,22 +12,31 @@
         <mat-card-content fxLayout="column">
           <mat-form-field appearance="outline">
             <mat-label>Usuário</mat-label>
-            <input matInput placeholder="Digite seu usuário" />
+            <input matInput placeholder="Digite seu usuário" formControlName="username" />
           </mat-form-field>
+
           <mat-form-field appearance="outline">
             <mat-label>Senha</mat-label>
-            <input matInput [type]="hidePassword ? 'password' : 'text'" placeholder="Digite sua senha" />
-            <button mat-icon-button matSuffix (click)="togglePasswordVisibility()">
+            <input
+              matInput
+              [type]="hidePassword ? 'password' : 'text'"
+              placeholder="Digite sua senha"
+              formControlName="password"
+            />
+            <button mat-icon-button matSuffix (click)="togglePasswordVisibility()" type="button">
               <mat-icon>{{ hidePassword ? 'visibility_off' : 'visibility' }}</mat-icon>
             </button>
           </mat-form-field>
+
           <mat-checkbox class="save-login-checkbox" [checked]="true"> Salvar o login realizado </mat-checkbox>
         </mat-card-content>
 
         <mat-card-actions>
-          <button mat-raised-button color="primary" class="login-button">ENTRAR</button>
+          <button mat-raised-button color="primary" class="login-button" type="submit" [disabled]="loginForm.invalid">
+            ENTRAR
+          </button>
         </mat-card-actions>
-      </div>
-    </mat-card>
-  </div>
+      </mat-card>
+    </div>
+  </form>
 </div>

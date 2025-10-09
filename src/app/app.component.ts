@@ -1,23 +1,44 @@
-import { Component, inject } from '@angular/core';
-import { RouterOutlet, Router, RouterModule } from '@angular/router';
+import { Component } from '@angular/core';
+import { NavigationEnd, RouterOutlet, Router, RouterModule } from '@angular/router';
 import { ThemeService } from './services/theme.service';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { FlexLayoutModule } from '@angular/flex-layout';
+import { CommonModule } from '@angular/common';
+import { filter } from 'rxjs';
+import { AuthService } from './services/auth.service';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet, RouterModule, MatButtonModule, MatIconModule, MatToolbarModule, FlexLayoutModule],
+  imports: [
+    CommonModule,
+    RouterOutlet,
+    RouterModule,
+    MatButtonModule,
+    MatIconModule,
+    MatToolbarModule,
+    FlexLayoutModule,
+  ],
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.scss'],
 })
 export class AppComponent {
+  isFullScreenRoute = false;
   title = 'sitepost';
-  themeService = inject(ThemeService);
 
-  constructor(private router: Router) {
+  constructor(
+    private router: Router,
+    private themeService: ThemeService,
+    public authService: AuthService,
+  ) {
     this.themeService.loadThemeOnStartup();
+    this.authService.tryAutoRefreshToken();
+
+    this.router.events.pipe(filter((event) => event instanceof NavigationEnd)).subscribe((event: any) => {
+      const fullScreenRoutes = ['/login', '/not-found'];
+      this.isFullScreenRoute = fullScreenRoutes.includes(event.urlAfterRedirects);
+    });
   }
 
   navigateTo(route: string): void {
@@ -26,5 +47,9 @@ export class AppComponent {
 
   toggleTheme(): void {
     this.themeService.toggleTheme();
+  }
+
+  logout(): void {
+    this.authService.logout();
   }
 }

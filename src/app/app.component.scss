@@ -1,36 +1,64 @@
 .main-toolbar {
-  height: 50px;
-  padding: 0 16px;
-  display: flex;
-  align-items: center;
+  height: 100px;
+  padding: 0;
   background-color: var(--mat-sys-background);
   position: relative;
   overflow: hidden;
 }
 
-.toolbar-title-container {
+.toolbar-background-image {
   position: absolute;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  background-image: url('/src/assets/header-background.jpg');
+  background-image: url('../assets/header-background.jpg');
   background-size: cover;
   background-position: center;
   z-index: 0;
+}
+
+.toolbar-content {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+  padding: 0 16px;
 }
 
 .toolbar-spacer {
   flex: 1 1 auto;
 }
 
+.toolbar-buttons {
+  display: flex;
+  align-items: center;
+  height: 70%;
+  padding: 0 16px;
+  border-radius: 10px;
+  background-color: rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
 .toolbar-buttons button {
   margin-left: 8px;
+  color: white;
+}
+
+.toolbar-buttons .theme-toggle-button {
+  color: white;
 }
 
 .main-content {
   padding-top: 50px;
-  height: calc(100vh - 50px);
   box-sizing: border-box;
-  background-color: var(--mat-sys-color-surface-container);
+}
+
+.main-content.full-screen {
+  padding-top: 0;
+  height: 100vh;
 }
