@@ -8,6 +8,7 @@ import { FlexLayoutModule } from '@angular/flex-layout';
 import { CommonModule } from '@angular/common';
 import { filter } from 'rxjs';
 import { AuthService } from './services/auth.service';
+import { TagService } from './services/tag.service';
 
 @Component({
   selector: 'app-root',
@@ -31,9 +32,14 @@ export class AppComponent {
     private router: Router,
     private themeService: ThemeService,
     public authService: AuthService,
+    private tagService: TagService,
   ) {
     this.themeService.loadThemeOnStartup();
     this.authService.tryAutoRefreshToken();
+
+    // prettier-ignore
+    if (this.authService.isLoggedIn())
+      this.tagService.fetchTags();
 
     this.router.events.pipe(filter((event) => event instanceof NavigationEnd)).subscribe((event: any) => {
       const fullScreenRoutes = ['/login', '/not-found'];
