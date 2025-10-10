@@ -11,7 +11,13 @@
 
     <mat-form-field class="post-textarea" appearance="outline">
       <mat-label>O que você está pensando?</mat-label>
-      <textarea matInput cdkTextareaAutosize cdkAutosizeMinRows="5" [formControl]="postTextCtrl"></textarea>
+      <textarea
+        matInput
+        cdkTextareaAutosize
+        cdkAutosizeMinRows="5"
+        [formControl]="postTextCtrl"
+        #postTextarea
+      ></textarea>
     </mat-form-field>
 
     <div class="counters-container" fxLayout="row wrap" fxLayoutGap="8px">

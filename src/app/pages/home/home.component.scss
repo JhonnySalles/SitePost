@@ -136,11 +136,34 @@
 }
 
 ngx-dropzone-image-preview {
-  min-width: 100px;
-  max-width: 150px;
-  height: 100px;
-  border-radius: 8px;
-  pointer-events: none;
+  position: relative;
+  overflow: visible;
+}
+
+::ng-deep .previews-container .ngx-dz-remove {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  height: 24px;
+  width: 24px;
+  border-radius: 50%;
+  background: var(--mat-sys-error);
+  opacity: 1 !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.4);
+  transition: transform 0.2s ease-in-out;
+}
+
+::ng-deep .previews-container ngx-dropzone-remove-badge:hover {
+  transform: scale(1.1);
+}
+
+::ng-deep .previews-container ngx-dropzone-remove-badge svg line {
+  stroke: var(--mat-sys-on-error);
+  stroke-width: 2px;
 }
 
 .counters-container {

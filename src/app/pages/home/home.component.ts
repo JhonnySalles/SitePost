@@ -20,7 +20,7 @@ import { MatCardModule } from '@angular/material/card';
 import { MatChipsModule, MatChipInputEvent } from '@angular/material/chips';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
-import { MatInputModule } from '@angular/material/input';
+import { MatInput, MatInputModule } from '@angular/material/input';
 import { FlexLayoutModule } from '@angular/flex-layout';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatButtonModule } from '@angular/material/button';
@@ -28,6 +28,8 @@ import { LiveAnnouncer } from '@angular/cdk/a11y';
 import { NgxDropzoneModule } from 'ngx-dropzone';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { PublishService } from '../../services/publish.service';
+import { TagService } from '../../services/tag.service';
+import { ImageCacheService } from '../../services/image-cache.service';
 import { SOCIAL_PLATFORMS, X, BLUESKY, TUMBLR } from '../../shared/models/social-platforms.model';
 
 @Component({
@@ -54,36 +56,44 @@ import { SOCIAL_PLATFORMS, X, BLUESKY, TUMBLR } from '../../shared/models/social
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
 })
 export class HomeComponent implements OnInit, OnDestroy {
-  separatorKeysCodes: number[] = [ENTER, COMMA];
-  tagCtrl = new FormControl('');
-  filteredTags$: Observable<string[]>;
-  tags: string[] = ['Exemplo'];
-  allTags: string[] = ['React', 'Angular', 'Vue', 'Svelte', 'NodeJS', 'PHP'];
+  // --- Injeções ---
+  private publishService = inject(PublishService);
+  private tagService = inject(TagService);
+  private imageCacheService = inject(ImageCacheService);
+  private snackBar = inject(MatSnackBar);
+  private platformId = inject(PLATFORM_ID);
 
   @ViewChild('tagInput') tagInput!: ElementRef<HTMLInputElement>;
   announcer = inject(LiveAnnouncer);
 
-  uploadedFiles: File[] = [];
+  @ViewChild('postTextarea', { read: MatInput })
+  postTextarea!: MatInput;
 
-  postTextCtrl = new FormControl('');
-  platforms = SOCIAL_PLATFORMS;
-
+  // --- Propriedades do Formulário ---
   isExpanded = false;
+  postTextCtrl = new FormControl('');
+  tagCtrl = new FormControl('');
+  tags: string[] = [];
+  allTags: string[] = [];
+  filteredTags$!: Observable<string[]>;
+  uploadedFiles: File[] = [];
+  separatorKeysCodes: number[] = [ENTER, COMMA];
+
+  // --- Constantes e Lógica de UI ---
+  platforms = SOCIAL_PLATFORMS;
   private hoverTimer: any;
-
-  private publishService = inject(PublishService);
-  private snackBar = inject(MatSnackBar);
-  private platformId = inject(PLATFORM_ID);
-
   private valueChangesSub!: Subscription;
+  private tagsSub!: Subscription;
   private readonly DRAFT_STORAGE_KEY = 'home_page_draft';
 
   onSelectFiles(event: { addedFiles: any }) {
     this.uploadedFiles.push(...event.addedFiles);
+    this.imageCacheService.saveImages(this.uploadedFiles);
   }
 
   onRemoveFile(event: File) {
     this.uploadedFiles.splice(this.uploadedFiles.indexOf(event), 1);
+    this.imageCacheService.saveImages(this.uploadedFiles);
   }
 
   constructor(private zone: NgZone) {
@@ -182,9 +192,9 @@ export class HomeComponent implements OnInit, OnDestroy {
   }
 
   private clearCache(): void {
-    if (isPlatformBrowser(this.platformId)) {
+    // prettier-ignore
+    if (isPlatformBrowser(this.platformId))
       localStorage.removeItem(this.DRAFT_STORAGE_KEY);
-    }
   }
 
   private async submitPost(type: 'draft' | 'publish'): Promise<void> {
@@ -207,6 +217,7 @@ export class HomeComponent implements OnInit, OnDestroy {
 
     request$.subscribe({
       next: () => {
+        this.tagService.addTags(payload.tags);
         const message = type === 'draft' ? 'Rascunho salvo!' : 'Publicado!';
         this.snackBar.open(message, 'OK', { duration: 3000 });
         this.onCancel();
@@ -223,26 +234,16 @@ export class HomeComponent implements OnInit, OnDestroy {
     if (!isPlatformBrowser(this.platformId))
       return [];
     else {
-      const imagePromises = this.uploadedFiles.map((file) => {
-        return new Promise<{ base64: string }>((resolve, reject) => {
-          const reader = new FileReader();
-          reader.readAsDataURL(file);
-          reader.onload = () => {
-            const base64String = (reader.result as string).split(',')[1];
-            resolve({ base64: base64String });
-          };
-          reader.onerror = (error) => reject(error);
-        });
-      });
-      return Promise.all(imagePromises);
+      const dataUrls = await this.imageCacheService.filesToDataUrls(this.uploadedFiles);
+      return dataUrls.map(dataUrl => ({ base64: dataUrl }));
     }
   }
 
   onCancel(): void {
     this.postTextCtrl.setValue('');
-    this.tags = [];
     this.uploadedFiles = [];
     this.clearCache();
+    this.imageCacheService.clearCache();
     this.snackBar.open('Formulário limpo.', 'Fechar', { duration: 2000 });
   }
 
@@ -251,17 +252,53 @@ export class HomeComponent implements OnInit, OnDestroy {
   }
 
   onPublish(): void {
-    this.submitPost('publish');
+    try {
+      this.validate();
+      this.submitPost('publish');
+    } catch (error) {
+      console.warn('Publicação interrompida por falha na validação.', error);
+    }
+  }
+
+  private validate(): void {
+    const failingPlatform = this.platforms.find((platform) => this.getRemainingCharacters(platform) < 0);
+
+    if (failingPlatform) {
+      this.snackBar.open(
+        `Limite de caracteres excedido para: ${failingPlatform.name}. Por favor, ajuste o texto.`,
+        'Fechar',
+        { duration: 4000 },
+      );
+      this.postTextarea.focus();
+      throw new Error(`Validation failed: Character limit exceeded for ${failingPlatform.name}`);
+    }
   }
 
   ngOnInit(): void {
     this.loadStateFromCache();
     this.setupStateSaving();
+
+    this.tagsSub = this.tagService.getTags().subscribe((tagsFromService) => {
+      this.allTags = tagsFromService;
+    });
+
+    this.imageCacheService.loadImages().then((files) => {
+      this.uploadedFiles = files;
+    });
+
+    this.filteredTags$ = this.tagCtrl.valueChanges.pipe(
+      startWith(null),
+      map((tag: string | null) => (tag ? this._filter(tag) : this.allTags.slice())),
+    );
   }
 
   ngOnDestroy(): void {
     // prettier-ignore
     if (this.valueChangesSub)
       this.valueChangesSub.unsubscribe();
+
+    // prettier-ignore
+    if (this.tagsSub)
+      this.tagsSub.unsubscribe();
   }
 }
