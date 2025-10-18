@@ -7,9 +7,12 @@ import { MatDividerModule } from '@angular/material/divider';
 import { FlexLayoutModule } from '@angular/flex-layout';
 import { ThemeService } from '../../services/theme.service';
 import { FormsModule } from '@angular/forms';
+import { Observable } from 'rxjs';
+import { MatSnackBar } from '@angular/material/snack-bar';
 
-import { AnyCredentials, X, TUMBLR, THREADS, BLUESKY } from '../../shared/models/social-platforms.model';
 import { PlatformCardComponent } from '../../shared/components/platform-card/platform-card.component';
+import { ConfigurationService } from '../../services/configuration.service';
+import { AnyConfigs } from '../../shared/models/social-platforms.model';
 
 @Component({
   selector: 'app-config',
@@ -29,32 +32,34 @@ import { PlatformCardComponent } from '../../shared/components/platform-card/pla
 })
 export class ConfigComponent {
   themeService = inject(ThemeService);
+  private configurationService = inject(ConfigurationService);
+  private snackBar = inject(MatSnackBar);
 
-  credentials: AnyCredentials[] = [
-    {
-      platform: X,
-      active: true,
-    },
-    {
-      platform: THREADS,
-      active: true,
-    },
-    {
-      platform: BLUESKY,
-      active: true,
-    },
-    {
-      platform: TUMBLR,
-      active: false,
-      blogName: 'meu-blog-principal',
-      blogs: [
-        { name: 'meu-blog-principal', title: 'Blog Principal' },
-        { name: 'blog-secundario', title: 'Fotos de Gatos' },
-      ],
-    },
-  ];
+  configs$: Observable<AnyConfigs[] | null>;
+  localConfigs: AnyConfigs[] = [];
+
+  constructor() {
+    this.configs$ = this.configurationService.getConfigurations();
+  }
 
   onThemeChange(isDark: boolean): void {
     this.themeService.isDarkTheme.set(isDark);
+  }
+
+  ngOnInit(): void {
+    this.configs$.subscribe((configs) => {
+      this.localConfigs = configs ? JSON.parse(JSON.stringify(configs)) : [];
+    });
+  }
+
+  onSave(): void {
+    this.configurationService.saveConfigurations(this.localConfigs).subscribe(() => {
+      this.snackBar.open('Configurações salvas com sucesso!', 'OK', { duration: 3000 });
+    });
+  }
+
+  onCancel(): void {
+    this.ngOnInit();
+    this.snackBar.open('Alterações descartadas.', 'OK', { duration: 2000 });
   }
 }

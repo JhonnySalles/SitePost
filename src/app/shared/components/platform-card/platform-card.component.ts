@@ -12,12 +12,14 @@ import { MatButtonModule } from '@angular/material/button';
 import { FlexLayoutModule } from '@angular/flex-layout';
 
 import {
-  AnyCredentials,
+  AnyConfigs,
   SOCIAL_PLATFORMS,
-  TumblrCredentials,
+  TumblrConfigs,
   TUMBLR,
+  TumblrBlog,
 } from '../../../shared/models/social-platforms.model';
 import { ThemeService } from '../../../services/theme.service';
+import { ConfigurationService } from '../../../services/configuration.service';
 
 @Component({
   selector: 'app-platform-card',
@@ -39,23 +41,44 @@ import { ThemeService } from '../../../services/theme.service';
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
 })
 export class PlatformCardComponent implements OnInit {
-  @Input({ required: true }) credential!: AnyCredentials;
+  @Input({ required: true }) config!: AnyConfigs;
 
   themeService = inject(ThemeService);
+  private configurationService = inject(ConfigurationService);
 
   platformDetails: (typeof SOCIAL_PLATFORMS)[number] | undefined;
 
-  tumblrCredential?: TumblrCredentials;
+  tumblrConfigs?: TumblrConfigs;
+  selectedBlog?: TumblrBlog;
+
+  get tumblrCredential(): TumblrConfigs | null {
+    return this.isTumblr() ? (this.config as TumblrConfigs) : null;
+  }
 
   ngOnInit(): void {
-    this.platformDetails = SOCIAL_PLATFORMS.find((p) => p.name === this.credential.platform);
+    this.platformDetails = SOCIAL_PLATFORMS.find((p) => p.name === this.config.platform);
 
-    // prettier-ignore
-    if (this.isTumblr())
-      this.tumblrCredential = this.credential as TumblrCredentials;
+    if (this.isTumblr()) {
+      this.tumblrConfigs = this.config as TumblrConfigs;
+      // prettier-ignore
+      if (this.tumblrConfigs.blogs && this.tumblrConfigs.blogs.length > 0)
+        this.selectedBlog = this.tumblrConfigs.blogs.find(blog => blog.selected);
+    }
   }
 
   isTumblr(): boolean {
-    return this.credential.platform === TUMBLR;
+    return this.config.platform === TUMBLR;
+  }
+
+  onRefreshBlogs(): void {
+    this.configurationService.refreshTumblrBlogs().subscribe();
+  }
+
+  onBlogSelectionChange(): void {
+    if (this.isTumblr() && (this.config as TumblrConfigs).blogs) {
+      (this.config as TumblrConfigs).blogs.forEach((blog) => {
+        blog.selected = blog.name === this.selectedBlog?.name;
+      });
+    }
   }
 }

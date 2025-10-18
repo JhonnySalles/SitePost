@@ -1,0 +1,32 @@
+<mat-card class="history-card">
+  <mat-card-header>
+    <div class="status-pill" [ngClass]="statusClass">{{ item.situacao }}</div>
+    <div class="date">{{ item.data | date: 'dd/MM/yyyy HH:mm' }}</div>
+    <div fxFlex></div>
+    <button mat-icon-button class="delete-button">
+      <mat-icon>delete_outline</mat-icon>
+    </button>
+  </mat-card-header>
+
+  <mat-card-content>
+    <p class="post-text" *ngIf="item.text">{{ item.text }}</p>
+
+    <div class="image-grid" *ngIf="item.images && item.images.length > 0">
+      <div *ngFor="let image of item.images" class="grid-image-item">
+        <img [src]="image.url" alt="Imagem do post" />
+      </div>
+    </div>
+  </mat-card-content>
+
+  <mat-divider></mat-divider>
+
+  <mat-card-footer>
+    <mat-chip-listbox *ngIf="item.tags && item.tags.length > 0">
+      <mat-chip *ngFor="let tag of item.tags">{{ tag }}</mat-chip>
+    </mat-chip-listbox>
+
+    <div class="platform-icons" *ngIf="item.images && item.images.length > 0">
+      <ion-icon *ngFor="let platform of getUniquePlatforms(item.images)" [name]="getPlatformIcon(platform)"></ion-icon>
+    </div>
+  </mat-card-footer>
+</mat-card>

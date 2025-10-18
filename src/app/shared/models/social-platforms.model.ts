@@ -1,5 +1,5 @@
 export const UNKNOW = 'unknow';
-export const X = 'x';
+export const TWITTER = 'twitter';
 export const TUMBLR = 'tumblr';
 export const THREADS = 'threads';
 export const BLUESKY = 'bluesky';
@@ -13,7 +13,7 @@ export const SOCIAL_PLATFORMS = [
     darkColor: '#36465D',
   },
   {
-    name: X,
+    name: TWITTER,
     icon: 'logo-twitter',
     limits: 280,
     color: '#1DA1F2',
@@ -37,7 +37,8 @@ export const SOCIAL_PLATFORMS = [
 
 export type PlatformType = (typeof SOCIAL_PLATFORMS)[number]['name'] | typeof UNKNOW;
 
-export interface Credentials {
+export interface Configs {
+  id: number;
   platform: PlatformType;
   active: boolean;
   aditional?: string;
@@ -46,12 +47,13 @@ export interface Credentials {
 export interface TumblrBlog {
   name: string;
   title: string;
+  selected: boolean;
 }
 
-export interface TumblrCredentials extends Credentials {
+export interface TumblrConfigs extends Configs {
   platform: typeof TUMBLR;
   blogName: string;
   blogs: TumblrBlog[];
 }
 
-export type AnyCredentials = TumblrCredentials | Credentials;
+export type AnyConfigs = TumblrConfigs | Configs;

@@ -2,8 +2,9 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable, inject, PLATFORM_ID } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { Router } from '@angular/router';
-import { Observable, tap, catchError, of } from 'rxjs';
+import { Observable, tap, catchError, of, switchMap } from 'rxjs';
 import { environment } from '../../environments/environment';
+import { ConfigurationService } from './configuration.service';
 
 @Injectable({
   providedIn: 'root',
@@ -11,6 +12,7 @@ import { environment } from '../../environments/environment';
 export class AuthService {
   private http = inject(HttpClient);
   private router = inject(Router);
+  private configurationService = inject(ConfigurationService);
 
   private platformId = inject(PLATFORM_ID);
 
@@ -18,7 +20,10 @@ export class AuthService {
   private readonly LAST_REFRESH_KEY = 'last_refresh_attempt';
 
   login(credentials: { username: string; password: string }): Observable<any> {
-    return this.http.post(environment.loginPath, credentials).pipe(tap((response) => this.saveTokens(response)));
+    return this.http.post(environment.loginPath, credentials).pipe(
+      tap((response) => this.saveTokens(response)),
+      switchMap(() => this.configurationService.fetchConfigurations()),
+    );
   }
 
   saveTokens(response: any): void {

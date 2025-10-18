@@ -2,10 +2,19 @@
   <div class="scroll-content">
     <mat-card class="pill-card">
       <div fxLayout="row" fxLayoutAlign="space-around center" class="platform-icons">
-        <ion-icon name="logo-twitter"></ion-icon>
-        <ion-icon name="logo-tumblr"></ion-icon>
-        <ion-icon name="at-sharp"></ion-icon>
-        <ion-icon name="chatbubbles-outline"></ion-icon>
+        <ion-icon
+          *ngFor="let platform of platforms"
+          [name]="platform.icon"
+          [style.color]="
+            isPlatformActive(platform.name) ? 'var(--platform-icon-active)' : 'var(--platform-icon-inactive)'
+          "
+          (mousedown)="onPlatformPress(platform.name)"
+          (mouseup)="onPlatformRelease()"
+          (mouseleave)="onPlatformRelease()"
+          (touchstart)="onPlatformPress(platform.name)"
+          (touchend)="onPlatformRelease()"
+        >
+        </ion-icon>
       </div>
     </mat-card>
 
@@ -73,15 +82,32 @@
       </ngx-dropzone-label>
     </ngx-dropzone>
 
-    <div class="previews-container" *ngIf="uploadedFiles.length > 0">
-      <ngx-dropzone-image-preview
-        ngProjectAs="ngx-dropzone-preview"
-        *ngFor="let f of uploadedFiles"
-        [file]="f"
-        [removable]="true"
-        (removed)="onRemoveFile(f)"
-      >
-      </ngx-dropzone-image-preview>
+    <div
+      class="previews-container"
+      *ngIf="uploadedFiles.length > 0"
+      cdkDropList
+      cdkDropListOrientation="horizontal"
+      (cdkDropListDropped)="onImageDrop($event)"
+    >
+      <div *ngFor="let image of uploadedFiles" class="preview-item-wrapper" cdkDrag>
+        <ngx-dropzone-image-preview
+          ngProjectAs="ngx-dropzone-preview"
+          [file]="image.file"
+          [removable]="true"
+          (removed)="onRemoveFile(image.file)"
+        >
+        </ngx-dropzone-image-preview>
+
+        <div class="preview-overlay" *ngIf="activePlatforms.length > 0">
+          <ion-icon
+            *ngFor="let config of activePlatforms"
+            [name]="getPlatformIcon(config.platform)"
+            (click)="toggleImagePlatform(image, config.platform)"
+            [class.selected]="isPlatformSelectedForImage(image, config.platform)"
+          >
+          </ion-icon>
+        </div>
+      </div>
     </div>
 
     <div

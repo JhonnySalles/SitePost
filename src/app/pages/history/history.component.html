@@ -1,0 +1,15 @@
+<div
+  class="history-container"
+  infinite-scroll
+  [infiniteScrollDistance]="2"
+  [infiniteScrollThrottle]="500"
+  (scrolled)="onScroll()"
+>
+  <div class="grid-container" #gridContainer>
+    <div *ngFor="let item of items" class="grid-item">
+      <app-history-card [item]="item"></app-history-card>
+    </div>
+  </div>
+
+  <div *ngIf="isLoading" class="loading-spinner">Carregando mais...</div>
+</div>

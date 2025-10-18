@@ -1,0 +1,26 @@
+.history-container {
+  height: 100%;
+  overflow-y: auto;
+  padding: 24px;
+  box-sizing: border-box;
+  background-color: var(--mat-sys-background);
+  display: flex;
+  justify-content: center;
+}
+
+.grid-container {
+  width: 100%;
+  max-width: 1200px;
+  box-sizing: border-box;
+}
+
+.grid-item {
+  width: 320px;
+  margin-bottom: 20px;
+}
+
+.loading-spinner {
+  text-align: center;
+  padding: 20px;
+  color: var(--mat-sys-on-surface-variant);
+}

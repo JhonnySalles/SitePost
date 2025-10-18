@@ -28,9 +28,15 @@
       <mat-card-header>
         <mat-card-title>Contas Conectadas</mat-card-title>
       </mat-card-header>
-      <mat-card-content class="accounts-list">
-        <app-platform-card *ngFor="let cred of credentials" [credential]="cred"> </app-platform-card>
+      <mat-card-content class="accounts-list" *ngIf="configs$ | async as configs">
+        <app-platform-card *ngFor="let conf of localConfigs" [config]="conf"> </app-platform-card>
       </mat-card-content>
     </mat-card>
+
+    <mat-divider></mat-divider>
+    <div class="action-buttons" fxLayout="row" fxLayoutAlign="end center" fxLayoutGap="16px">
+      <button mat-stroked-button (click)="onCancel()">Cancelar</button>
+      <button mat-flat-button color="primary" (click)="onSave()">Salvar</button>
+    </div>
   </div>
 </div>

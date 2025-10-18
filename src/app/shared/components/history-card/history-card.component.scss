@@ -1,0 +1,71 @@
+:host {
+  display: block;
+}
+
+.history-card {
+  padding: 16px;
+}
+
+mat-card-header {
+  display: flex;
+  align-items: center;
+  padding-bottom: 16px;
+}
+
+.status-pill {
+  padding: 4px 12px;
+  border-radius: 16px;
+  font-weight: 500;
+  font-size: 12px;
+  color: white;
+}
+
+.status-publicado {
+  background-color: var(--mat-sys-primary);
+}
+
+.status-pendente {
+  background-color: #ffab00;
+}
+
+.status-erro {
+  background-color: var(--mat-sys-error);
+}
+
+.date {
+  font-size: 14px;
+  color: var(--mat-sys-on-surface-variant);
+}
+
+.post-text {
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.image-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+  gap: 8px;
+}
+
+.grid-image-item img {
+  width: 100%;
+  border-radius: 8px;
+  display: block;
+}
+
+mat-card-footer {
+  padding: 16px 0 0;
+}
+
+mat-chip-listbox {
+  margin-bottom: 16px;
+}
+
+.platform-icons {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+  font-size: 20px;
+  color: var(--mat-sys-on-surface-variant);
+}

@@ -12,16 +12,16 @@
   <mat-card-content class="platform-content">
     <div class="setting-row">
       <span>Ativo</span>
-      <mat-checkbox [(ngModel)]="credential.active"></mat-checkbox>
+      <mat-checkbox [(ngModel)]="config.active"></mat-checkbox>
     </div>
 
-    <ng-container *ngIf="isTumblr() && tumblrCredential">
+    <ng-container *ngIf="isTumblr() && tumblrConfigs">
       <mat-divider></mat-divider>
       <div class="setting-row">
         <span>Blog</span>
         <mat-form-field appearance="outline" class="blog-select">
-          <mat-select [(ngModel)]="tumblrCredential.blogName">
-            <mat-option *ngFor="let blog of tumblrCredential.blogs" [value]="blog.name">
+          <mat-select [(ngModel)]="tumblrConfigs.blogName">
+            <mat-option *ngFor="let blog of tumblrConfigs.blogs" [value]="blog.name">
               {{ blog.title }}
             </mat-option>
           </mat-select>
