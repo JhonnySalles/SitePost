@@ -11,6 +11,7 @@ interface MultiPlatformImage {
 }
 
 export interface PublishPayload {
+  id?: number;
   platforms: PlatformType[];
   text: string;
   tags: string[];
@@ -25,6 +26,7 @@ interface SinglePlatformImage {
 }
 
 export interface SinglePublishPayload {
+  id?: number;
   text: string;
   tags: string[];
   images: SinglePlatformImage[];

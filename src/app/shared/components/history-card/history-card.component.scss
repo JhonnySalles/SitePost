@@ -1,5 +1,6 @@
 :host {
   display: block;
+  cursor: pointer;
 }
 
 .history-card {
@@ -7,8 +8,10 @@
 }
 
 mat-card-header {
-  display: flex;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
   align-items: center;
+  gap: 16px;
   padding-bottom: 16px;
 }
 
@@ -18,14 +21,23 @@ mat-card-header {
   font-weight: 500;
   font-size: 12px;
   color: white;
+  margin-right: 8px;
 }
 
-.status-publicado {
-  background-color: var(--mat-sys-primary);
+.status-post {
+  background-color: #6cc00c;
 }
 
-.status-pendente {
-  background-color: #ffab00;
+.dark-theme .status-post {
+  background-color: #88ff00;
+}
+
+.status-rascunho {
+  background-color: #e2a60e;
+}
+
+.dark-theme .status-rascunho {
+  background-color: #ffd600;
 }
 
 .status-erro {
@@ -35,6 +47,12 @@ mat-card-header {
 .date {
   font-size: 14px;
   color: var(--mat-sys-on-surface-variant);
+  justify-self: center;
+}
+
+.delete-button {
+  color: var(--mat-sys-error);
+  justify-self: end;
 }
 
 .post-text {

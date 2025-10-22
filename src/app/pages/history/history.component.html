@@ -7,7 +7,7 @@
 >
   <div class="grid-container" #gridContainer>
     <div *ngFor="let item of items" class="grid-item">
-      <app-history-card [item]="item"></app-history-card>
+      <app-history-card [item]="item" (itemDeleted)="onItemDeleted($event)"></app-history-card>
     </div>
   </div>
 

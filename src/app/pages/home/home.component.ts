@@ -35,6 +35,9 @@ import { ConfigurationService } from '../../services/configuration.service';
 import { AnyConfigs, TumblrConfigs } from '../../shared/models/social-platforms.model';
 import { SOCIAL_PLATFORMS, TWITTER, BLUESKY, TUMBLR, PlatformType } from '../../shared/models/social-platforms.model';
 import { DRAFT, POST, PostType, PublishPayload, SinglePublishPayload } from '../../shared/models/publish.model';
+import { PostEditorService } from '../../services/post-editor.service';
+import { HistoryImage, HistoryItem } from '../../shared/models/history.model';
+import { take } from 'rxjs';
 
 export interface PlatformImage {
   file: File;
@@ -68,6 +71,7 @@ export interface PlatformImage {
 export class HomeComponent implements OnInit, OnDestroy {
   // --- Injeções ---
   private publishService = inject(PublishService);
+  private postEditorService = inject(PostEditorService);
   private tagService = inject(TagService);
   private imageCacheService = inject(ImageCacheService);
   private configurationService = inject(ConfigurationService);
@@ -94,6 +98,7 @@ export class HomeComponent implements OnInit, OnDestroy {
   platforms = SOCIAL_PLATFORMS;
   platformConfigs: AnyConfigs[] = [];
 
+  private editingPostId: number | null = null;
   private hoverTimer: any;
   private valueChangesSub!: Subscription;
   private tagsSub!: Subscription;
@@ -246,6 +251,34 @@ export class HomeComponent implements OnInit, OnDestroy {
       localStorage.removeItem(this.DRAFT_STORAGE_KEY);
   }
 
+  private loadPostForEditing(): void {
+    this.postEditorService
+      .getPostToEdit()
+      .pipe(take(1))
+      .subscribe(async (itemToEdit) => {
+        if (itemToEdit) {
+          this.postTextCtrl.setValue(itemToEdit.text);
+          this.tags = [...itemToEdit.tags];
+          this.editingPostId = itemToEdit.id;
+          this.uploadedFiles = await this.urlsToPlatformImages(itemToEdit.images);
+          this.postEditorService.clearPostToEdit();
+        }
+      });
+  }
+
+  private async urlsToPlatformImages(images: HistoryImage[]): Promise<PlatformImage[]> {
+    const promises = images.map(async (img) => {
+      const response = await fetch(img.url);
+      const blob = await response.blob();
+      const file = new File([blob], 'history-image.jpg', { type: blob.type });
+      return {
+        file,
+        platforms: img.plataformas || [],
+      };
+    });
+    return Promise.all(promises);
+  }
+
   private async submitPost(type: PostType): Promise<void> {
     const payload = await this.buildMultiPlatformPayload();
 
@@ -368,6 +401,7 @@ export class HomeComponent implements OnInit, OnDestroy {
     const tumblrConfig = this.platformConfigs.find((c) => c.platform === TUMBLR) as TumblrConfigs | undefined;
 
     return {
+      id: this.editingPostId ?? undefined,
       platforms: this.activePlatforms.map((p) => p.platform),
       text: this.postTextCtrl.value || '',
       tags: this.tags,
@@ -383,6 +417,7 @@ export class HomeComponent implements OnInit, OnDestroy {
       const tumblrConfig = this.platformConfigs.find((c) => c.platform === TUMBLR) as TumblrConfigs | undefined;
 
       return {
+        id: this.editingPostId ?? undefined,
         text: this.postTextCtrl.value || '',
         tags: this.tags,
         images: await this.formatImagesForApi(platformName),
@@ -403,6 +438,7 @@ export class HomeComponent implements OnInit, OnDestroy {
     this.uploadedFiles = [];
     this.clearCache();
     this.imageCacheService.clearCache();
+    this.editingPostId = null;
     this.snackBar.open('Formulário limpo.', 'Fechar', { duration: 2000 });
   }
 
@@ -455,6 +491,7 @@ export class HomeComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
+    this.loadPostForEditing();
     this.loadStateFromCache();
     this.setupStateSaving();
 

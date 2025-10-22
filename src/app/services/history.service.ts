@@ -15,4 +15,8 @@ export class HistoryService {
 
     return this.http.get<HistoryResponse>(`${environment.apiPath}/history`, { params });
   }
+
+  deleteHistoryItem(id: number): Observable<any> {
+    return this.http.delete(`${environment.apiPath}/history/${id}`);
+  }
 }

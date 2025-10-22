@@ -1,19 +1,26 @@
 import { PostType } from './publish.model';
 import { PlatformType } from './social-platforms.model';
 
+export interface HistoryPlatform {
+  plataforma: PlatformType;
+  sucesso: boolean;
+  erro: string | null;
+}
+
 export interface HistoryImage {
   url: string;
-  platforms: PlatformType[];
+  plataformas: PlatformType[] | null;
 }
 
 export interface HistoryItem {
   id: number;
-  tipo: PostType;
+  tipo: 'POST' | 'RASCUNHO';
   situacao: 'PENDENTE' | 'PUBLICADO' | 'ERRO';
   text: string;
   data: string; // ISO 8601 Date string
   tags: string[];
   images: HistoryImage[];
+  plataformas: HistoryPlatform[];
 }
 
 export interface HistoryResponse {

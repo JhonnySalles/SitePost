@@ -1,4 +1,4 @@
-import { Component, Input, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
+import { Component, Input, Output, EventEmitter, inject, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
 import { MatCardModule } from '@angular/material/card';
 import { MatChipsModule } from '@angular/material/chips';
@@ -6,8 +6,12 @@ import { MatDividerModule } from '@angular/material/divider';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { FlexLayoutModule } from '@angular/flex-layout';
-import { HistoryImage, HistoryItem } from '../../../shared/models/history.model';
+import { HistoryItem } from '../../../shared/models/history.model';
 import { SOCIAL_PLATFORMS } from '../../../shared/models/social-platforms.model';
+import { HistoryService } from '../../../services/history.service';
+import { MatSnackBar } from '@angular/material/snack-bar';
+import { Router } from '@angular/router';
+import { PostEditorService } from '../../../services/post-editor.service';
 
 @Component({
   selector: 'app-history-card',
@@ -28,17 +32,41 @@ import { SOCIAL_PLATFORMS } from '../../../shared/models/social-platforms.model'
 })
 export class HistoryCardComponent {
   @Input({ required: true }) item!: HistoryItem;
+  @Output() itemDeleted = new EventEmitter<number>();
 
-  get statusClass(): string {
-    return `status-${this.item.situacao.toLowerCase()}`;
+  private snackBar = inject(MatSnackBar);
+  private router = inject(Router);
+
+  private historyService = inject(HistoryService);
+  private postEditorService = inject(PostEditorService);
+
+  get typeClass(): string {
+    return `status-${this.item.tipo.toLowerCase()}`;
   }
 
   getPlatformIcon(platformName: string): string {
     return SOCIAL_PLATFORMS.find((p) => p.name === platformName)?.icon || 'help-outline';
   }
 
-  getUniquePlatforms(images: HistoryImage[]): string[] {
-    const allPlatforms = images.flatMap((img) => img.platforms);
-    return [...new Set(allPlatforms)];
+  onEdit(): void {
+    console.log('Editing item:', this.item);
+    this.postEditorService.setPostToEdit(this.item);
+    this.router.navigate(['/home']);
+  }
+
+  onDelete(event: MouseEvent): void {
+    event.stopPropagation();
+    if (confirm('Tem certeza que deseja excluir este item do histórico?')) {
+      this.historyService.deleteHistoryItem(this.item.id).subscribe({
+        next: () => {
+          this.snackBar.open('Item excluído com sucesso!', 'OK', { duration: 3000 });
+          this.itemDeleted.emit(this.item.id);
+        },
+        error: (err) => {
+          this.snackBar.open('Falha ao excluir o item.', 'Fechar', { duration: 3000 });
+          console.error(err);
+        },
+      });
+    }
   }
 }

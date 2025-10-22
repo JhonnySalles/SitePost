@@ -1,9 +1,8 @@
-<mat-card class="history-card">
+<mat-card class="history-card" (click)="onEdit()">
   <mat-card-header>
-    <div class="status-pill" [ngClass]="statusClass">{{ item.situacao }}</div>
+    <div class="status-pill" [ngClass]="typeClass">{{ item.tipo }}</div>
     <div class="date">{{ item.data | date: 'dd/MM/yyyy HH:mm' }}</div>
-    <div fxFlex></div>
-    <button mat-icon-button class="delete-button">
+    <button mat-icon-button class="delete-button" (click)="onDelete($event)">
       <mat-icon>delete_outline</mat-icon>
     </button>
   </mat-card-header>
@@ -25,8 +24,8 @@
       <mat-chip *ngFor="let tag of item.tags">{{ tag }}</mat-chip>
     </mat-chip-listbox>
 
-    <div class="platform-icons" *ngIf="item.images && item.images.length > 0">
-      <ion-icon *ngFor="let platform of getUniquePlatforms(item.images)" [name]="getPlatformIcon(platform)"></ion-icon>
+    <div class="platform-icons" *ngIf="item.plataformas && item.plataformas.length > 0">
+      <ion-icon *ngFor="let p of item.plataformas" [name]="getPlatformIcon(p.plataforma)"></ion-icon>
     </div>
   </mat-card-footer>
 </mat-card>

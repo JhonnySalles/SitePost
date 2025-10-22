@@ -75,6 +75,11 @@ export class HistoryComponent implements OnInit, AfterViewInit, OnDestroy {
     this.loadMore();
   }
 
+  onItemDeleted(idToDelete: number): void {
+    this.items = this.items.filter((item) => item.id !== idToDelete);
+    setTimeout(() => this.masonry?.layout?.(), 50);
+  }
+
   ngOnDestroy(): void {
     // prettier-ignore
     this.masonry?.destroy?.();
