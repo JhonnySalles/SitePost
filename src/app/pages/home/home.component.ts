@@ -439,11 +439,11 @@ export class HomeComponent implements OnInit, OnDestroy {
     this.clearCache();
     this.imageCacheService.clearCache();
     this.editingPostId = null;
-    this.snackBar.open('Formulário limpo.', 'Fechar', { duration: 2000 });
   }
 
   onSaveAsDraft(): void {
     this.submitPost(DRAFT);
+    this.snackBar.open('Rascunho salvo com sucesso.', 'Fechar', { duration: 2000 });
   }
 
   onPublish(): void {
