@@ -1,6 +1,7 @@
 <div
   class="history-container"
   infinite-scroll
+  [scrollWindow]="false"
   [infiniteScrollDistance]="2"
   [infiniteScrollThrottle]="500"
   (scrolled)="onScroll()"

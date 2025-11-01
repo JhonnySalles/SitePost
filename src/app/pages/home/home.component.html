@@ -5,9 +5,7 @@
         <ion-icon
           *ngFor="let platform of platforms"
           [name]="platform.icon"
-          [style.color]="
-            isPlatformActive(platform.name) ? 'var(--platform-icon-active)' : 'var(--platform-icon-inactive)'
-          "
+          [style.color]="getPlatformIconColor(platform.name)"
           (mousedown)="onPlatformPress(platform.name)"
           (mouseup)="onPlatformRelease()"
           (mouseleave)="onPlatformRelease()"

@@ -36,13 +36,17 @@ import { AnyConfigs, TumblrConfigs } from '../../shared/models/social-platforms.
 import { SOCIAL_PLATFORMS, TWITTER, BLUESKY, TUMBLR, PlatformType } from '../../shared/models/social-platforms.model';
 import { DRAFT, POST, PostType, PublishPayload, SinglePublishPayload } from '../../shared/models/publish.model';
 import { PostEditorService } from '../../services/post-editor.service';
-import { HistoryImage, HistoryItem } from '../../shared/models/history.model';
+import { HistoryImage } from '../../shared/models/history.model';
+import { NotificationService } from '../../services/notification.service';
+import { PostSummaryUpdate, PostUpdate, PostUpdateStatus } from '../../shared/models/webhook.model';
 import { take } from 'rxjs';
 
 export interface PlatformImage {
   file: File;
   platforms: PlatformType[];
 }
+
+type PlatformIconStatus = 'active' | 'inactive' | 'success' | 'error';
 
 @Component({
   selector: 'app-home',
@@ -71,6 +75,7 @@ export interface PlatformImage {
 export class HomeComponent implements OnInit, OnDestroy {
   // --- Injeções ---
   private publishService = inject(PublishService);
+  private notificationService = inject(NotificationService);
   private postEditorService = inject(PostEditorService);
   private tagService = inject(TagService);
   private imageCacheService = inject(ImageCacheService);
@@ -97,14 +102,26 @@ export class HomeComponent implements OnInit, OnDestroy {
   // --- Constantes e Lógica de UI ---
   platforms = SOCIAL_PLATFORMS;
   platformConfigs: AnyConfigs[] = [];
+  platformIconStatus = new Map<PlatformType, PlatformIconStatus>();
 
+  private statusResetTimer: any;
   private editingPostId: number | null = null;
   private hoverTimer: any;
+  private longPressTimer: any;
+
   private valueChangesSub!: Subscription;
   private tagsSub!: Subscription;
+  private webhookSub!: Subscription;
+
   private readonly DRAFT_STORAGE_KEY = 'home_page_draft';
-  private longPressTimer: any;
   private readonly LONG_PRESS_DURATION_MS = 800;
+
+  constructor(private zone: NgZone) {
+    this.filteredTags$ = this.tagCtrl.valueChanges.pipe(
+      startWith(null),
+      map((tag: string | null) => (tag ? this._filter(tag) : this.allTags.slice())),
+    );
+  }
 
   onSelectFiles(event: { addedFiles: any }) {
     const newImages: PlatformImage[] = event.addedFiles.map((file: any) => ({
@@ -142,13 +159,6 @@ export class HomeComponent implements OnInit, OnDestroy {
 
       image.platforms = [...new Set(platformsForThisImage)];
     });
-  }
-
-  constructor(private zone: NgZone) {
-    this.filteredTags$ = this.tagCtrl.valueChanges.pipe(
-      startWith(null),
-      map((tag: string | null) => (tag ? this._filter(tag) : this.allTags.slice())),
-    );
   }
 
   add(event: MatChipInputEvent): void {
@@ -285,12 +295,36 @@ export class HomeComponent implements OnInit, OnDestroy {
     const request$ =
       type === DRAFT ? this.publishService.saveAsDraft(payload) : this.publishService.publishPost(payload);
 
+    // prettier-ignore
+    if (type === POST) {
+      this.snackBar.open('Post enviado, em alguns instantes estará disponivel.', 'OK', { duration: 3000 });
+      this.onCancel();
+    }
+
     request$.subscribe({
-      next: () => {
+      next: (response: any) => {
         this.tagService.addTags(payload.tags);
-        const message = type === DRAFT ? 'Rascunho salvo!' : 'Publicado!';
-        this.snackBar.open(message, 'OK', { duration: 3000 });
-        this.onCancel();
+        if (type === POST && response.summary) {
+          const summaryUpdate: PostSummaryUpdate = {
+            type: 'summary',
+            postId: response.post_id,
+            status: PostUpdateStatus.Completed,
+            successfulPlatforms: response.summary.successful,
+            failedPlatforms: response.summary.failed.map((f: any) => ({
+              platform: f.platform,
+              reason: f.reason,
+            })),
+          };
+
+          this.handleWebhookUpdate(summaryUpdate);
+        } else {
+          const message = type === DRAFT ? 'Rascunho salvo!' : 'Postagem enviada!';
+          this.snackBar.open(message, 'OK', { duration: 3000 });
+        }
+
+        // prettier-ignore
+        if (type === DRAFT)
+          this.onCancel();
       },
       error: (err) => {
         this.snackBar.open('Erro ao enviar. Tente novamente.', 'Fechar', { duration: 3000 });
@@ -443,7 +477,6 @@ export class HomeComponent implements OnInit, OnDestroy {
 
   onSaveAsDraft(): void {
     this.submitPost(DRAFT);
-    this.snackBar.open('Rascunho salvo com sucesso.', 'Fechar', { duration: 2000 });
   }
 
   onPublish(): void {
@@ -490,6 +523,74 @@ export class HomeComponent implements OnInit, OnDestroy {
     }
   }
 
+  private handleWebhookUpdate(update: PostUpdate): void {
+    clearTimeout(this.statusResetTimer);
+
+    if (update.type === 'progress') {
+      // prettier-ignore
+      if (update.status === PostUpdateStatus.Success)
+        this.platformIconStatus.set(update.platform, 'success');
+      else {
+        this.platformIconStatus.set(update.platform, 'error');
+        if (update.error) {
+          this.snackBar.open(`Erro em ${update.platform}: ${update.error}`, 'Fechar', {
+            duration: 3000,
+            panelClass: ['error-snackbar'],
+          });
+        }
+      }
+    } else if (update.type === 'summary') {
+      update.successfulPlatforms.forEach((p) => this.platformIconStatus.set(p, 'success'));
+      update.failedPlatforms.forEach((p) => this.platformIconStatus.set(p.platform, 'error'));
+      this.showSummaryNotification(update);
+      this.statusResetTimer = setTimeout(() => this.resetPlatformIcons(), 10000);
+    }
+  }
+
+  private showSummaryNotification(summary: PostSummaryUpdate): void {
+    const successCount = summary.successfulPlatforms.length;
+    const failCount = summary.failedPlatforms.length;
+
+    if (failCount === 0 && successCount > 0)
+      this.snackBar.open('Publicado com sucesso em todas as plataformas!', 'OK', {
+        duration: 5000,
+        panelClass: ['success-snackbar'],
+      });
+    else if (successCount === 0 && failCount > 0)
+      this.snackBar.open('Falha ao publicar em todas as plataformas.', 'Fechar', {
+        duration: 5000,
+        panelClass: ['error-snackbar'],
+      });
+    else if (successCount > 0 && failCount > 0) {
+      const failedNames = summary.failedPlatforms.map((p) => p.platform).join(', ');
+      this.snackBar.open(`Publicação concluída. Falha em: ${failedNames}`, 'Fechar', {
+        duration: 7000,
+        panelClass: ['warn-snackbar'],
+      });
+    }
+  }
+
+  private resetPlatformIcons(): void {
+    this.platformConfigs.forEach((config) => {
+      this.platformIconStatus.set(config.platform, config.active ? 'active' : 'inactive');
+    });
+  }
+
+  getPlatformIconColor(platformName: PlatformType): string {
+    const status = this.platformIconStatus.get(platformName) || 'inactive';
+    switch (status) {
+      case 'active':
+        return 'var(--platform-icon-active)';
+      case 'success':
+        return 'var(--platform-icon-success)';
+      case 'error':
+        return 'var(--platform-icon-error)';
+      case 'inactive':
+      default:
+        return 'var(--platform-icon-inactive)';
+    }
+  }
+
   ngOnInit(): void {
     this.loadPostForEditing();
     this.loadStateFromCache();
@@ -513,6 +614,17 @@ export class HomeComponent implements OnInit, OnDestroy {
       if (configs)
         this.platformConfigs = configs;
     });
+
+    this.configurationService.getConfigurations().subscribe((configs) => {
+      if (configs) {
+        this.platformConfigs = configs;
+        this.resetPlatformIcons();
+      }
+    });
+
+    this.webhookSub = this.notificationService.getUpdates().subscribe((update) => {
+      this.handleWebhookUpdate(update);
+    });
   }
 
   ngOnDestroy(): void {
@@ -523,5 +635,11 @@ export class HomeComponent implements OnInit, OnDestroy {
     // prettier-ignore
     if (this.tagsSub)
       this.tagsSub.unsubscribe();
+
+    // prettier-ignore
+    if (this.webhookSub)
+      this.webhookSub.unsubscribe();
+
+    clearTimeout(this.statusResetTimer);
   }
 }

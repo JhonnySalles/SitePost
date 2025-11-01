@@ -9,6 +9,7 @@ import { CommonModule } from '@angular/common';
 import { filter } from 'rxjs';
 import { AuthService } from './services/auth.service';
 import { TagService } from './services/tag.service';
+import { NotificationService } from './services/notification.service';
 
 @Component({
   selector: 'app-root',
@@ -33,6 +34,7 @@ export class AppComponent {
     private themeService: ThemeService,
     public authService: AuthService,
     private tagService: TagService,
+    private notificationService: NotificationService,
   ) {
     this.themeService.loadThemeOnStartup();
     this.authService.tryAutoRefreshToken();

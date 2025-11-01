@@ -49,7 +49,6 @@ export class HistoryCardComponent {
   }
 
   onEdit(): void {
-    console.log('Editing item:', this.item);
     this.postEditorService.setPostToEdit(this.item);
     this.router.navigate(['/home']);
   }

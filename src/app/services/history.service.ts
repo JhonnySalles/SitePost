@@ -10,7 +10,7 @@ import { HistoryResponse } from '../shared/models/history.model';
 export class HistoryService {
   private http = inject(HttpClient);
 
-  getHistory(page: number, size = 10): Observable<HistoryResponse> {
+  getHistory(page: number, size = 20): Observable<HistoryResponse> {
     const params = new HttpParams().set('page', page.toString()).set('size', size.toString());
 
     return this.http.get<HistoryResponse>(`${environment.apiPath}/history`, { params });
