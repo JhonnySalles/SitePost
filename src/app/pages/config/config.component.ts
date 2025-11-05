@@ -62,4 +62,8 @@ export class ConfigComponent {
     this.ngOnInit();
     this.snackBar.open('Alterações descartadas.', 'OK', { duration: 2000 });
   }
+
+  testSentryError(): void {
+    throw new Error('Este é um erro de teste do Sentry no Cliente!');
+  }
 }

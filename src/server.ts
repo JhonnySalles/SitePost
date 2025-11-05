@@ -1,5 +1,7 @@
 import * as crypto from 'crypto';
 import { environment } from './environments/environment';
+import * as Sentry from '@sentry/node';
+import { expressIntegration, expressErrorHandler } from '@sentry/node';
 import { WebhookPayloadDTO, PostProgressUpdate, PostSummaryUpdate, toUpdate } from './app/shared/models/webhook.model';
 import {
   AngularNodeAppEngine,
@@ -11,6 +13,13 @@ import express from 'express';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { WebSocketServer } from 'ws';
+
+Sentry.init({
+  dsn: environment.sentryDsn,
+  environment: environment.sentryEnvironment,
+  tracesSampleRate: 1.0,
+  integrations: [expressIntegration(), Sentry.httpServerIntegration()],
+});
 
 const serverDistFolder = dirname(fileURLToPath(import.meta.url));
 const browserDistFolder = resolve(serverDistFolder, '../browser');
@@ -59,6 +68,11 @@ app.post('/site/webhook/status', verifyWebhookSignature, (req, res) => {
   return res.status(200).send({ message: 'Webhook recebido' });
 });
 
+app.get('/site/debug-sentry', (req, res) => {
+  console.error('Teste de erro do Sentry no Servidor SSR!');
+  throw new Error('Este é um erro de teste do Sentry no Servidor SSR!');
+});
+
 function broadcastToClients(message: PostProgressUpdate | PostSummaryUpdate) {
   if (!wss) {
     console.warn('Servidor WebSocket não inicializado. Ignorando broadcast.');
@@ -105,6 +119,8 @@ app.use('/**', (req, res, next) => {
     .then((response) => (response ? writeResponseToNodeResponse(response, res) : next()))
     .catch(next);
 });
+
+app.use(expressErrorHandler());
 
 /**
  * Start the server if this module is the main entry point.

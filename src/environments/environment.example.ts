@@ -5,4 +5,6 @@ export const environment = {
   loginPath: '/login',
   apiKey: 'SUA_CHAVE_DE_API_SECRETA_AQUI',
   webhookSecret: 'SEU_SEGREDO_SUPER_SECRETO_AQUI',
+  sentryDsn: 'SEU_DSN_DO_SENTRY_AQUI',
+  sentryEnvironment: 'development',
 };
