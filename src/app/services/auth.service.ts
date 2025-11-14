@@ -3,13 +3,14 @@ import { Injectable, inject, PLATFORM_ID } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { Router } from '@angular/router';
 import { Observable, tap, catchError, of, switchMap } from 'rxjs';
-import { environment } from '../../environments/environment';
+import { EnvironmentService } from './environment.service';
 import { ConfigurationService } from './configuration.service';
 
 @Injectable({
   providedIn: 'root',
 })
 export class AuthService {
+  private envService = inject(EnvironmentService);
   private http = inject(HttpClient);
   private router = inject(Router);
   private configurationService = inject(ConfigurationService);
@@ -20,7 +21,7 @@ export class AuthService {
   private readonly LAST_REFRESH_KEY = 'last_refresh_attempt';
 
   login(credentials: { username: string; password: string }): Observable<any> {
-    return this.http.post(environment.loginPath, credentials).pipe(
+    return this.http.post(this.envService.environment.loginPath, credentials).pipe(
       tap((response) => this.saveTokens(response)),
       switchMap(() => this.configurationService.fetchConfigurations()),
     );
@@ -101,7 +102,7 @@ export class AuthService {
   private refreshToken(refreshToken: string): Observable<any> {
     const payload = { refresh_token: refreshToken };
 
-    return this.http.post(`${environment.loginPath}/refresh`, payload).pipe(
+    return this.http.post(`${this.envService.environment.loginPath}/refresh`, payload).pipe(
       tap((response) => this.saveTokens(response)),
       catchError((error) => {
         throw error;

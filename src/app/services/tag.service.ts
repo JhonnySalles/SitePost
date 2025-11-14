@@ -1,12 +1,13 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { BehaviorSubject, Observable, take } from 'rxjs';
-import { environment } from '../../environments/environment';
+import { EnvironmentService } from '../services/environment.service';
 
 @Injectable({
   providedIn: 'root',
 })
 export class TagService {
+  private envService = inject(EnvironmentService);
   private http = inject(HttpClient);
 
   private tags$ = new BehaviorSubject<string[]>([]);
@@ -22,7 +23,7 @@ export class TagService {
       return;
 
     this.http
-      .get<string[]>(`${environment.apiPath}/tags`)
+      .get<string[]>(`${this.envService.environment.apiPath}/tags`)
       .pipe(take(1))
       .subscribe({
         next: (fetchedTags) => {

@@ -2,7 +2,7 @@ import { Injectable, inject, PLATFORM_ID } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, Observable, tap, of, map } from 'rxjs';
-import { environment } from '../../environments/environment';
+import { EnvironmentService } from '../services/environment.service';
 import { ConfiguracaoPlataformaDTO, TumblrBlogDTO } from '../shared/models/configuracao-plataforma.dto';
 import { AnyConfigs, Configs, TumblrConfigs, TUMBLR, TumblrBlog } from '../shared/models/social-platforms.model';
 
@@ -12,6 +12,7 @@ import { AnyConfigs, Configs, TumblrConfigs, TUMBLR, TumblrBlog } from '../share
 export class ConfigurationService {
   private http = inject(HttpClient);
   private platformId = inject(PLATFORM_ID);
+  private envService = inject(EnvironmentService);
   private readonly CONFIG_STORAGE_KEY = 'platform_configurations';
 
   private configs$ = new BehaviorSubject<AnyConfigs[] | null>(null);
@@ -25,17 +26,19 @@ export class ConfigurationService {
   }
 
   fetchConfigurations(): Observable<AnyConfigs[]> {
-    return this.http.get<ConfiguracaoPlataformaDTO[]>(`${environment.apiPath}/configuration/platforms`).pipe(
-      map((configsDto) => this.mapDtoToConfigs(configsDto)),
-      tap((credentials) => {
-        this.updateStorageAndSubject(credentials);
-      }),
-    );
+    return this.http
+      .get<ConfiguracaoPlataformaDTO[]>(`${this.envService.environment.apiPath}/configuration/platforms`)
+      .pipe(
+        map((configsDto) => this.mapDtoToConfigs(configsDto)),
+        tap((credentials) => {
+          this.updateStorageAndSubject(credentials);
+        }),
+      );
   }
 
   saveConfigurations(configsToSave: AnyConfigs[]): Observable<any> {
     const payload = this.mapConfigsToDtoForUpdate(configsToSave);
-    return this.http.put(`${environment.apiPath}/configuration/platforms`, payload).pipe(
+    return this.http.put(`${this.envService.environment.apiPath}/configuration/platforms`, payload).pipe(
       tap(() => {
         this.updateStorageAndSubject(configsToSave);
       }),
@@ -43,7 +46,7 @@ export class ConfigurationService {
   }
 
   refreshTumblrBlogs(): Observable<TumblrBlog[]> {
-    return this.http.get<TumblrBlog[]>(`${environment.apiPath}/platform/tumblr/blogs`).pipe(
+    return this.http.get<TumblrBlog[]>(`${this.envService.environment.apiPath}/platform/tumblr/blogs`).pipe(
       tap((newBlogs) => {
         const currentConfigs = this.configs$.getValue();
         if (currentConfigs) {

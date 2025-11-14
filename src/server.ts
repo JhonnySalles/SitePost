@@ -1,24 +1,20 @@
 import * as crypto from 'crypto';
-import { environment } from './environments/environment';
 import * as Sentry from '@sentry/node';
-import { expressIntegration, expressErrorHandler } from '@sentry/node';
+import { expressErrorHandler } from '@sentry/node';
 import { WebhookPayloadDTO, PostProgressUpdate, PostSummaryUpdate, toUpdate } from './app/shared/models/webhook.model';
-import {
-  AngularNodeAppEngine,
-  createNodeRequestHandler,
-  isMainModule,
-  writeResponseToNodeResponse,
-} from '@angular/ssr/node';
+import { AngularNodeAppEngine, createNodeRequestHandler, isMainModule } from '@angular/ssr/node';
 import express from 'express';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { WebSocketServer } from 'ws';
+import { APP_ENVIRONMENT, AppEnvironment } from './app/app-environment';
 
-Sentry.init({
-  dsn: environment.sentryDsn,
-  environment: environment.sentryEnvironment,
+Sentry.initWithoutDefaultIntegrations({
+  dsn: process.env['SENTRY_DSN'],
+  environment: process.env['SENTRY_ENVIRONMENT'],
   tracesSampleRate: 1.0,
-  integrations: [expressIntegration(), Sentry.httpServerIntegration()],
+  integrations: [Sentry.expressIntegration(), Sentry.httpServerIntegration()],
+  release: 'sitepost@1.0.0',
 });
 
 const serverDistFolder = dirname(fileURLToPath(import.meta.url));
@@ -37,7 +33,7 @@ const verifyWebhookSignature = (req: any, res: any, next: any) => {
   if (!signature)
     return res.status(401).send('Assinatura de segurança não fornecida.');
 
-  const secret = environment.webhookSecret;
+  const secret = process.env['WEB_HOOK_SECRET'] || '';
   const hmac = crypto.createHmac('sha256', secret);
   hmac.update(req.body);
   const calculatedSignature = 'sha256=' + hmac.digest('hex');
@@ -115,9 +111,54 @@ app.use(
  */
 app.use('/**', (req, res, next) => {
   angularApp
-    .handle(req)
-    .then((response) => (response ? writeResponseToNodeResponse(response, res) : next()))
-    .catch(next);
+    .handle(req, {
+      bootstrapOptions: {
+        providers: [
+          {
+            provide: APP_ENVIRONMENT,
+            useValue: {
+              production: process.env['PRODUCTION'] === 'true',
+              apiBaseUrl: process.env['API_BASE_URL'],
+              apiPath: process.env['API_PATH'],
+              loginPath: process.env['LOGIN_PATH'],
+              apiKey: process.env['API_KEY'],
+              sentryDsn: process.env['SENTRY_DSN']!,
+              sentryEnvironment: process.env['SENTRY_ENVIRONMENT']!,
+            } as AppEnvironment,
+          },
+        ],
+      },
+    })
+    .then(async (response) => {
+      if (!response) {
+        next();
+        return;
+      }
+
+      const clientEnv: AppEnvironment = {
+        production: process.env['PRODUCTION'] === 'true',
+        apiBaseUrl: process.env['API_BASE_URL'] || '',
+        apiPath: process.env['API_PATH'] || '',
+        loginPath: process.env['LOGIN_PATH'] || '',
+        apiKey: process.env['API_KEY'] || '',
+        sentryDsn: process.env['SENTRY_DSN'] || '',
+        sentryEnvironment: process.env['SENTRY_ENVIRONMENT'] || '',
+      };
+
+      const html = await response.text();
+
+      const modifiedHtml = html.replace(
+        '</head>',
+        `<script>window.__APP_ENV__ = ${JSON.stringify(clientEnv)}</script></head>`,
+      );
+
+      response.headers.forEach((value, key) => {
+        res.setHeader(key, value);
+      });
+      res.status(response.status);
+      res.send(modifiedHtml);
+    })
+    .catch((err) => next(err));
 });
 
 app.use(expressErrorHandler());

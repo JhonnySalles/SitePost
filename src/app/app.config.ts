@@ -1,4 +1,10 @@
-import { ApplicationConfig, provideZoneChangeDetection, importProvidersFrom, ErrorHandler } from '@angular/core';
+import {
+  ApplicationConfig,
+  provideZoneChangeDetection,
+  importProvidersFrom,
+  ErrorHandler,
+  APP_INITIALIZER,
+} from '@angular/core';
 import { provideRouter, withComponentInputBinding } from '@angular/router';
 import { provideHttpClient, withInterceptors, withFetch } from '@angular/common/http';
 
@@ -11,9 +17,31 @@ import { authInterceptor } from './interceptors/auth.interceptor';
 
 import { FlexLayoutModule } from '@angular/flex-layout';
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
+import { EnvironmentService } from './services/environment.service';
+
+export function initializeSentry(envService: EnvironmentService) {
+  return () => {
+    const env = envService.environment;
+    Sentry.init({
+      dsn: env.sentryDsn,
+      environment: env.sentryEnvironment,
+      integrations: [Sentry.browserTracingIntegration(), Sentry.replayIntegration()],
+      tracesSampleRate: 1.0,
+      replaysSessionSampleRate: 0.1,
+      replaysOnErrorSampleRate: 1.0,
+    });
+  };
+}
 
 export const appConfig: ApplicationConfig = {
   providers: [
+    EnvironmentService,
+    {
+      provide: APP_INITIALIZER,
+      useFactory: initializeSentry,
+      deps: [EnvironmentService],
+      multi: true,
+    },
     {
       provide: ErrorHandler,
       useValue: Sentry.createErrorHandler({

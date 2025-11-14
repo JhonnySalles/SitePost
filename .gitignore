@@ -74,10 +74,8 @@ ehthumbs.db
 # Arquivos temporários e de ambiente
 .tmp
 .env
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
+.env.*
+!.env.example
 environment.ts
 environment.prod.ts
 
