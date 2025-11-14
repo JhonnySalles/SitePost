@@ -32,7 +32,7 @@ import { PublishService } from '../../services/publish.service';
 import { TagService } from '../../services/tag.service';
 import { ImageCacheService } from '../../services/image-cache.service';
 import { ConfigurationService } from '../../services/configuration.service';
-import { AnyConfigs, TumblrConfigs } from '../../shared/models/social-platforms.model';
+import { AnyConfigs, TumblrConfigs, UNKNOW } from '../../shared/models/social-platforms.model';
 import { SOCIAL_PLATFORMS, TWITTER, BLUESKY, TUMBLR, PlatformType } from '../../shared/models/social-platforms.model';
 import { DRAFT, POST, PostType, PublishPayload, SinglePublishPayload } from '../../shared/models/publish.model';
 import { PostEditorService } from '../../services/post-editor.service';
@@ -154,8 +154,9 @@ export class HomeComponent implements OnInit, OnDestroy {
     this.uploadedFiles.forEach((image, index) => {
       let platformsForThisImage: PlatformType[] = [...activeUnlimited];
 
-      // pretty-ignore
-      if (index < 4) platformsForThisImage.push(...activeLimited);
+      // prettier-ignore
+      if (index < 4)
+        platformsForThisImage.push(...activeLimited);
 
       image.platforms = [...new Set(platformsForThisImage)];
     });

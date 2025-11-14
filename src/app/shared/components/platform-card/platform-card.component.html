@@ -27,7 +27,9 @@
           </mat-select>
         </mat-form-field>
       </div>
-      <button mat-stroked-button color="primary" class="full-width-btn">Consultar Blogs</button>
+      <button mat-stroked-button color="primary" class="full-width-btn" (click)="onRefreshBlogs()">
+        Consultar Blogs
+      </button>
     </ng-container>
   </mat-card-content>
 </mat-card>

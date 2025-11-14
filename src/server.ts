@@ -9,7 +9,7 @@ import { fileURLToPath } from 'node:url';
 import { WebSocketServer } from 'ws';
 import { APP_ENVIRONMENT, AppEnvironment } from './app/app-environment';
 
-Sentry.initWithoutDefaultIntegrations({
+Sentry.init({
   dsn: process.env['SENTRY_DSN'],
   environment: process.env['SENTRY_ENVIRONMENT'],
   tracesSampleRate: 1.0,

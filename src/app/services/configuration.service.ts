@@ -1,10 +1,17 @@
 import { Injectable, inject, PLATFORM_ID } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
-import { BehaviorSubject, Observable, tap, of, map } from 'rxjs';
+import { BehaviorSubject, Observable, tap, map } from 'rxjs';
 import { EnvironmentService } from '../services/environment.service';
 import { ConfiguracaoPlataformaDTO, TumblrBlogDTO } from '../shared/models/configuracao-plataforma.dto';
-import { AnyConfigs, Configs, TumblrConfigs, TUMBLR, TumblrBlog } from '../shared/models/social-platforms.model';
+import {
+  AnyConfigs,
+  Configs,
+  TumblrConfigs,
+  TUMBLR,
+  TumblrBlog,
+  TWITTER,
+} from '../shared/models/social-platforms.model';
 
 @Injectable({
   providedIn: 'root',
@@ -46,7 +53,14 @@ export class ConfigurationService {
   }
 
   refreshTumblrBlogs(): Observable<TumblrBlog[]> {
-    return this.http.get<TumblrBlog[]>(`${this.envService.environment.apiPath}/platform/tumblr/blogs`).pipe(
+    return this.http.get<TumblrBlogDTO[]>(`${this.envService.environment.apiPath}/platform/tumblr/blogs`).pipe(
+      map((newBlogsDTO: TumblrBlogDTO[]) => {
+        return newBlogsDTO.map((b) => ({
+          name: b.nome,
+          title: b.titulo,
+          selected: b.selecionado,
+        }));
+      }),
       tap((newBlogs) => {
         const currentConfigs = this.configs$.getValue();
         if (currentConfigs) {
@@ -64,8 +78,30 @@ export class ConfigurationService {
   }
 
   private mapDtoToConfigs(dtos: ConfiguracaoPlataformaDTO[]): AnyConfigs[] {
-    return dtos.map((dto) => {
-      if (dto.nome.toLowerCase() === TUMBLR && dto.blogs) {
+    return dtos.reduce((accumulator: AnyConfigs[], dto: ConfiguracaoPlataformaDTO) => {
+      let platformName = dto.nome.toLowerCase();
+      // prettier-ignore
+      if (platformName === 'x')
+        platformName = TWITTER;
+
+      const existingIndex = accumulator.findIndex((cred) => cred.platform === platformName);
+
+      if (existingIndex > -1) {
+        if (dto.ativo) accumulator[existingIndex].active = true;
+
+        if (platformName === TUMBLR && dto.blogs) {
+          (accumulator[existingIndex] as TumblrConfigs).blogs = dto.blogs.map((b) => ({
+            name: b.nome,
+            title: b.titulo,
+            selected: b.selecionado,
+          }));
+          (accumulator[existingIndex] as TumblrConfigs).blogName = dto.blogs.find((b) => b.selecionado)?.nome || '';
+        }
+
+        return accumulator;
+      }
+
+      if (platformName === TUMBLR && dto.blogs) {
         const tumblrCred: TumblrConfigs = {
           id: dto.id,
           platform: TUMBLR,
@@ -73,16 +109,18 @@ export class ConfigurationService {
           blogs: dto.blogs.map((b) => ({ name: b.nome, title: b.titulo, selected: b.selecionado })),
           blogName: dto.blogs.find((b) => b.selecionado)?.nome || '',
         };
-        return tumblrCred;
+        accumulator.push(tumblrCred);
       } else {
         const cred: Configs = {
           id: dto.id,
-          platform: dto.nome.toLowerCase() as AnyConfigs['platform'],
+          platform: platformName as AnyConfigs['platform'],
           active: dto.ativo,
         };
-        return cred;
+        accumulator.push(cred);
       }
-    });
+
+      return accumulator;
+    }, [] as AnyConfigs[]);
   }
 
   private mapConfigsToDtoForUpdate(configs: AnyConfigs[]): any[] {
