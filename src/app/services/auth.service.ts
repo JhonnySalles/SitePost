@@ -21,7 +21,7 @@ export class AuthService {
   private readonly LAST_REFRESH_KEY = 'last_refresh_attempt';
 
   login(credentials: { username: string; password: string }): Observable<any> {
-    return this.http.post(this.envService.environment.loginPath, credentials).pipe(
+    return this.http.post(`${this.envService.environment.authPath}/login`, credentials).pipe(
       tap((response) => this.saveTokens(response)),
       switchMap(() => this.configurationService.fetchConfigurations()),
     );
@@ -102,7 +102,7 @@ export class AuthService {
   private refreshToken(refreshToken: string): Observable<any> {
     const payload = { refresh_token: refreshToken };
 
-    return this.http.post(`${this.envService.environment.loginPath}/refresh`, payload).pipe(
+    return this.http.post(`${this.envService.environment.authPath}/refresh`, payload).pipe(
       tap((response) => this.saveTokens(response)),
       catchError((error) => {
         throw error;

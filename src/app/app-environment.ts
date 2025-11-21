@@ -4,7 +4,7 @@ export interface AppEnvironment {
   production: boolean;
   apiBaseUrl: string;
   apiPath: string;
-  loginPath: string;
+  authPath: string;
   apiKey: string;
   sentryDsn: string;
   sentryEnvironment: string;

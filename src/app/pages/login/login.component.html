@@ -22,6 +22,7 @@
               [type]="hidePassword ? 'password' : 'text'"
               placeholder="Digite sua senha"
               formControlName="password"
+              autocomplete="current-password"
             />
             <button mat-icon-button matSuffix (click)="togglePasswordVisibility()" type="button">
               <mat-icon>{{ hidePassword ? 'visibility_off' : 'visibility' }}</mat-icon>
